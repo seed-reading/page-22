@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阅读的三重平衡 · 兴趣、技能与素养</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1c1410;
+    --ink-light: #4a3f35;
+    --paper: #faf6ef;
+    --paper-warm: #f5ede0;
+    --rust: #b05a2a;
+    --rust-light: #d4845a;
+    --sage: #7a8c6e;
+    --sage-light: #a8b89a;
+    --gold: #c49a3c;
+    --gold-light: #e8c878;
+    --blush: #d4967a;
+    --line: rgba(28,20,16,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  /* 纹理背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* Cover */
+  .cover {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+    background: var(--ink);
+  }
+
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(176,90,42,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 85% 10%, rgba(122,140,110,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(196,154,60,0.08) 0%, transparent 70%);
+  }
+
+  .cover-deco {
+    position: absolute;
+    top: 0; right: 0;
+    width: 45%;
+    height: 100%;
+    opacity: 0.06;
+    background: repeating-linear-gradient(
+      -45deg,
+      #fff 0px,
+      #fff 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  }
+
+  .cover-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .cover-circle:nth-child(1) { width: 500px; height: 500px; top: -150px; right: -100px; }
+  .cover-circle:nth-child(2) { width: 300px; height: 300px; bottom: 100px; right: 150px; border-color: rgba(196,154,60,0.15); }
+  .cover-circle:nth-child(3) { width: 180px; height: 180px; top: 40%; left: 5%; border-color: rgba(122,140,110,0.2); }
+
+  .cover-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 800px;
+  }
+
+  .cover-label {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s forwards;
+  }
+
+  .cover-title {
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 300;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  .cover-title em {
+    font-style: normal;
+    color: var(--gold-light);
+    display: block;
+  }
+
+  .cover-subtitle {
+    font-size: clamp(15px, 2.5vw, 20px);
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+    margin-top: 16px;
+    margin-bottom: 50px;
+    max-width: 560px;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+
+  .cover-line {
+    width: 60px;
+    height: 2px;
+    background: var(--rust-light);
+    margin-bottom: 50px;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s forwards;
+  }
+
+  .cover-quote {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    max-width: 440px;
+    opacity: 0;
+    animation: fadeUp 1s 1.1s forwards;
+  }
+
+  .cover-footer {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    opacity: 0;
+    animation: fadeIn 1s 1.5s forwards;
+  }
+
+  .cover-nav {
+    display: flex;
+    gap: 28px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .cover-scroll {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.2em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .scroll-line {
+    width: 40px;
+    height: 1px;
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* Main content */
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 80px 40px 120px;
+  }
+
+  /* Pull quote / opener */
+  .opener {
+    margin-bottom: 80px;
+    padding: 50px 0;
+    border-top: 2px solid var(--rust);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .opener::before {
+    content: '\201C';
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    color: var(--rust);
+    opacity: 0.15;
+    position: absolute;
+    top: -10px;
+    left: -20px;
+    line-height: 1;
+  }
+
+  .opener p {
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+
+  .opener em {
+    font-style: normal;
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 72px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .section-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    color: var(--rust);
+    opacity: 0.2;
+    line-height: 1;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: clamp(18px, 2.5vw, 23px);
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .section-title span {
+    display: block;
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    color: var(--rust-light);
+    letter-spacing: 0.3em;
+    margin-bottom: 4px;
+  }
+
+  .section p {
+    font-size: 16px;
+    color: var(--ink-light);
+    margin-bottom: 20px;
+    line-height: 1.95;
+  }
+
+  .section p:last-child { margin-bottom: 0; }
+
+  /* Highlight box */
+  .highlight {
+    background: var(--paper-warm);
+    border-left: 3px solid var(--rust);
+    padding: 24px 28px;
+    margin: 32px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .highlight p {
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 0;
+    font-style: italic;
+  }
+
+  /* Quality grid */
+  .qualities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+
+  .quality-card {
+    padding: 24px 20px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+
+  .quality-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(28,20,16,0.08);
+    border-color: var(--rust-light);
+  }
+
+  .quality-icon {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .quality-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .quality-desc {
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+
+  /* Pull quote */
+  .pull-quote {
+    margin: 48px -20px;
+    padding: 40px 40px;
+    background: var(--ink);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(176,90,42,0.3), transparent 60%);
+  }
+
+  .pull-quote p {
+    font-size: clamp(18px, 2.5vw, 22px);
+    font-weight: 300;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.9);
+    position: relative;
+    z-index: 1;
+    margin-bottom: 0;
+  }
+
+  .pull-quote em {
+    font-style: normal;
+    color: var(--gold-light);
+  }
+
+  /* Special Dark section */
+  .alaya-section {
+    background: linear-gradient(135deg, #1c1410 0%, #2d2018 100%);
+    color: #fff;
+    padding: 48px 40px;
+    margin: 48px -20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .alaya-section::after {
+    content: '平衡';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 100px;
+    font-weight: 700;
+    font-family: 'Noto Serif SC', serif;
+    color: rgba(255,255,255,0.03);
+    pointer-events: none;
+    letter-spacing: 0.1em;
+  }
+
+  .alaya-section .section-title {
+    color: #fff;
+  }
+
+  .alaya-section .section-title span {
+    color: var(--blush);
+  }
+
+  .alaya-section p {
+    color: rgba(255,255,255,0.7);
+  }
+
+  .alaya-section .section-num {
+    color: var(--blush);
+    opacity: 0.4;
+  }
+
+  .alaya-cards {
+    display: grid;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .alaya-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .alaya-card-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .alaya-card-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 4px;
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .alaya-card-text {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.7;
+  }
+
+  /* Closing */
+  .closing {
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .closing-ornament {
+    font-size: 32px;
+    margin-bottom: 28px;
+    display: block;
+    opacity: 0.4;
+  }
+
+  .closing-text {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--ink);
+    max-width: 560px;
+    margin: 0 auto 32px;
+  }
+
+  .closing-text em {
+    font-style: normal;
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  .closing-sign {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px;
+    color: var(--ink-light);
+    letter-spacing: 0.3em;
+    opacity: 0.6;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0;
+    opacity: 0.3;
+  }
+
+  .divider-line { flex: 1; height: 1px; background: var(--ink); }
+  .divider-dot { width: 4px; height: 4px; background: var(--rust); border-radius: 50%; }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .cover { padding: 40px 24px 36px; }
+    .main { padding: 48px 24px 80px; }
+    .pull-quote, .alaya-section { margin: 32px -10px; padding: 32px 24px; }
+    .qualities { grid-template-columns: repeat(2, 1fr); }
+    .opener::before { font-size: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cover -->
+<div class="cover">
+  <div class="cover-bg"></div>
+  <div class="cover-deco"></div>
+  <div class="cover-circle"></div>
+  <div class="cover-circle"></div>
+  <div class="cover-circle"></div>
+
+  <div class="cover-content">
+    <p class="cover-label">儿童阅读 · 成长节奏 · 可见与不可见</p>
+    <h1 class="cover-title">
+      阅读的三重平衡
+      <em>兴趣、技能与素养</em>
+    </h1>
+    <p class="cover-subtitle">当技能的进步容易被记录，兴趣与素养却常常隐而不显——我们如何在可见与不可见之间，守住阅读真正的方向</p>
+    <div class="cover-line"></div>
+    <p class="cover-quote">"成长有自己的节奏，有些变化甚至要等到多年以后，才会显现出意义。"</p>
+  </div>
+
+  <div class="cover-footer">
+    <div class="cover-nav">
+      <span>兴趣引擎</span>
+      <span>技能桥梁</span>
+      <span>素养沉淀</span>
+    </div>
+    <div class="cover-scroll">
+      <div class="scroll-line"></div>
+      <span>向下阅读</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Opener -->
+  <div class="opener">
+    <p>我们给孩子做阅读培养，大致围绕三件事：兴趣、技能和素养。兴趣是引擎，驱动孩子主动靠近书；技能是桥梁，让孩子读得顺、读得懂；素养则是沉淀：能感受一首诗的意境，能与主人公共情，能被书中的思想触动……并把这些化作成长的养料。<em>三者平衡时，彼此支撑，阅读由此进入良性循环。</em></p>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">一</span>
+      <h2 class="section-title">
+        <span>The Visible and the Invisible</span>
+        容易被看见的进步，与难以证明的成长
+      </h2>
+    </div>
+    <p>现实中的培养，往往并不完全按照理想的路径展开。技能的进步很容易被看见：一本书读完了没有、一天读了多少页、阅读速度提高了多少、能否读懂更复杂的文本，都可以记录、比较，甚至展示。</p>
+    <p>兴趣和素养却不同。一个孩子有多喜欢一本书，他对人物的理解是否更深了，他是否开始能够体会不同处境中的人的感受——这些变化往往难以在短时间内得到明确的证明。</p>
+    
+    <div class="highlight">
+      <p>于是，我们很容易把注意力放到那些能够被记录的事情上。可见的成果天然容易获得关注，那些缓慢、隐微、难以评价的成长，就容易被挤到边缘。</p>
+    </div>
+
+    <p>家长会担心，别的孩子已经开始读经典，自己的孩子是不是落后了；阅读机构需要向家长展示课程成效，自然更容易强调阅读量、速度和难度。可见与不可见之间的失衡，由此悄然发生。</p>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+  <!-- Section 2 -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">二</span>
+      <h2 class="section-title">
+        <span>The Anxiety of Uncertainty</span>
+        成人为何容易陷入这种失衡
+      </h2>
+    </div>
+    <p>一个重要的原因是，我们很难坦然面对成长的不确定性。我们希望孩子喜欢阅读，却无法安排他在什么时候喜欢上哪一本书；希望孩子从阅读中有所收获，却无法确定哪句话会在他心里留下痕迹。</p>
+    <p>成长有自己的节奏，有些变化甚至要等到多年以后，才会显现出意义。这种不确定性容易使人焦虑。为了让成长显得可靠，我们便开始增加任务、规定进度、设置奖励，用一套看得见的流程来确保“进步”正在发生。</p>
+
+    <div class="qualities">
+      <div class="quality-card">
+        <span class="quality-icon">📋</span>
+        <div class="quality-name">打卡与进度</div>
+        <div class="quality-desc">阅读打卡帮助建立习惯，却也可能让完成任务成为主要目的</div>
+      </div>
+      <div class="quality-card">
+        <span class="quality-icon">🏆</span>
+        <div class="quality-name">奖励与徽章</div>
+        <div class="quality-desc">适当的鼓励有积极作用，但预期的奖励可能悄悄改变动机</div>
+      </div>
+      <div class="quality-card">
+        <span class="quality-icon">📊</span>
+        <div class="quality-name">速度与难度</div>
+        <div class="quality-desc">可见的指标容易被追捧，隐微的成长则被挤到边缘</div>
+      </div>
+    </div>
+
+    <p>起初，这些安排只是辅助。但如果完成任务逐渐成为阅读的主要目的，孩子对阅读的理解就可能发生变化：他不再首先考虑这本书是否有趣，而是想着今天的任务是否完成；不再关心故事接下来会怎样，而是惦记着还有多少页没有读完。</p>
+  </div>
+
+  <!-- Pull Quote -->
+  <div class="pull-quote section" id="pq">
+    <p>当积分、徽章、排行榜和打卡成为孩子读书的主要理由时，如果有一天这些外部激励都消失了，<em>他还愿不愿意拿起书？</em></p>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">三</span>
+      <h2 class="section-title">
+        <span>The Overjustification Effect</span>
+        过度理由效应：为什么奖励可能削弱兴趣
+      </h2>
+    </div>
+    <p>心理学中有一项关于儿童绘画的经典研究。上世纪七十年代，Lepper 等人让幼儿园的孩子画画，这些孩子本来就喜欢画。研究者把孩子分成三组：一组事先被告知画画可以得到奖状，一组没有任何奖励，一组则在事后意外得到奖状。</p>
+    <p>一两周后的自由活动时间里，只有事先预期奖励的那组孩子，主动画画的时间明显减少；事后意外得奖的孩子，和没有奖励的孩子并无差别。</p>
+    
+    <div class="highlight">
+      <p>可见问题不在奖励本身，而在“预期”：孩子对自己为什么画画的理解，从“因为喜欢”悄悄变成了“因为有奖”，内在的动力也随之被削弱。心理学把这叫作“过度理由效应”。</p>
+    </div>
+
+    <p>当然，这并不意味着所有的督促和训练都应该取消。对尚未建立阅读习惯的孩子，适当的引导很有必要；对于阅读能力不足的孩子，有针对性的训练也可能帮助他们跨越困难。真正需要警惕的，是我们把原本用来帮助孩子接近阅读的手段，变成了孩子不得不完成的目的。</p>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+  <!-- Section 4 -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">四</span>
+      <h2 class="section-title">
+        <span>Bridge, Not Destination</span>
+        技能是桥梁，而非终点
+      </h2>
+    </div>
+    <p>阅读技能与阅读兴趣，并不是非此即彼的关系。一个孩子如果识字困难、理解吃力，即使有阅读意愿，也可能很难从书中获得乐趣。适当的训练能够帮助他读得更顺畅，让原本费力的事情逐渐变得愉快。反过来，阅读带来的乐趣也会促使他读得更多，并在持续积累中提升能力。这是一种相互促进的关系。</p>
+    <p>阅读研究中的“马太效应”也提示我们，阅读发展可能形成不同的循环：具备较好阅读能力的孩子，往往更容易获得阅读的乐趣，也更愿意投入时间，从而继续积累词汇和背景知识；而阅读困难的孩子，如果长期缺少适当支持，就可能因为读得少、读不顺而逐渐失去兴趣。</p>
+
+    <div class="qualities">
+      <div class="quality-card">
+        <span class="quality-icon">🌉</span>
+        <div class="quality-name">技能作为桥梁</div>
+        <div class="quality-desc">训练帮助孩子克服障碍，使他能够进入更丰富的文本</div>
+      </div>
+      <div class="quality-card">
+        <span class="quality-icon">🎯</span>
+        <div class="quality-name">指标取代目的</div>
+        <div class="quality-desc">当阅读被切割成速度、数量与完成率，桥梁便开始取代目的</div>
+      </div>
+      <div class="quality-card">
+        <span class="quality-icon">🔄</span>
+        <div class="quality-name">马太效应</div>
+        <div class="quality-desc">能力与兴趣互相强化，形成不同的成长循环</div>
+      </div>
+    </div>
+
+    <p>关键在于技能所处的位置。技能的价值是让他拥有更自由地选择、理解和享受阅读的可能。如果训练帮助孩子克服障碍，使他能够进入更丰富的文本，那么技能就是桥梁；如果阅读被不断切割成速度、数量、难度和完成率等指标，而孩子只是忙于证明自己读得不错，那么桥梁便开始取代目的。</p>
+  </div>
+
+  <!-- Dark Section -->
+  <div class="section alaya-section" id="s5">
+    <div class="section-header">
+      <span class="section-num">五</span>
+      <h2 class="section-title">
+        <span>The Quiet Moments</span>
+        素养的形成，需要漫长的时间
+      </h2>
+    </div>
+    <p>如果说技能的进步相对容易被看见，那么素养的形成，往往需要漫长的时间。阅读素养并不是在完成一定数量的书目之后自动获得的。它需要孩子真正进入文本，也需要他有机会停下来、想一想，并把阅读与自己的经验联系起来。</p>
+
+    <div class="alaya-cards">
+      <div class="alaya-card">
+        <span class="alaya-card-icon">⏳</span>
+        <div>
+          <div class="alaya-card-title">理解需要时间</div>
+          <div class="alaya-card-text">理解一个复杂的人物，需要时间；形成独立的判断，需要经历比较与反思；真正把书中的经验转化为自己的认知，也往往需要与现实生活反复碰撞。</div>
+        </div>
+      </div>
+      <div class="alaya-card">
+        <span class="alaya-card-icon">💭</span>
+        <div>
+          <div class="alaya-card-title">那些隐微的时刻</div>
+          <div class="alaya-card-text">有时，他只是在某句话前停留了一会儿；有时，他会对一个人物产生难以解释的同情；有时，一本书读完了，故事却在心里待了很久。也许多年以后，当他经历了相似的处境，才会重新理解当初读过的那段文字。</div>
+        </div>
+      </div>
+      <div class="alaya-card">
+        <span class="alaya-card-icon">🛤️</span>
+        <div>
+          <div class="alaya-card-title">当阅读变成赶路</div>
+          <div class="alaya-card-text">当阅读过度任务化，这些时刻便容易失去发生的空间。孩子的注意力被分散到进度、打卡和成果展示上，读书成了赶路，重要的不是沿途看见了什么，而是能否按时抵达终点。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+  <!-- Section 6 -->
+  <div class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">六</span>
+      <h2 class="section-title">
+        <span>Holding the Balance</span>
+        在兴趣、技能与素养之间守住方向
+      </h2>
+    </div>
+    <p>阅读培养需要在兴趣、技能和素养之间做好平衡。对于不同的孩子，我们需要提供不同的支持。在培养技能的同时，不要忘记技能究竟服务于什么；在追求进步的同时，要知道有些成长一时是很难显现的。</p>
+    <p>我们需要技能，因为没有必要的阅读能力，孩子可能无法进入更丰富的思想世界；我们需要兴趣，因为只有孩子愿意不断靠近书，阅读才可能成为持续发生的事情；我们更需要素养，因为阅读最终不只是为了读懂更多文本，还应该为理解他人、认识自己和探索世界提供更多可能。</p>
+    
+    <div class="highlight">
+      <p>真正需要警惕的是，我们采用的手段，是否仍在帮助孩子走向最初想要抵达的地方。</p>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="closing section" id="closing">
+    <span class="closing-ornament">✦</span>
+    <p class="closing-text">
+      兴趣是引擎，技能是桥梁，素养是沉淀。<em>三者平衡时，彼此支撑</em>；而当手段取代了目的，阅读便容易失去它原本的方向。<em>守住那份缓慢与隐微，成长自会按自己的节奏到来。</em>
+    </p>
+    <p class="closing-sign">· 阅读的三重平衡 · 兴趣、技能与素养 ·</p>
+  </div>
+
+</main>
+
+<script>
+  // Intersection Observer 滚动渐入效果
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
